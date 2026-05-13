@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+model prj_dersler {
+  id           Int            @id @default(autoincrement())
+  ders_adi     String         @unique
+  url_etiketi  String         @unique
+  prj_projeler prj_projeler[]
+}
+
+model prj_kullanicilar {
+  id               Int            @id @default(autoincrement())
+  ad_soyad         String
+  eposta           String         @unique
+  sifre_hash       String
+  rol              String?        @default("OGRENCI")
+  kayit_tarihi     DateTime?      @default(now())
+  guvenlik_sorusu  String?
+  guvenlik_cevabi  String?
+  prj_projeler     prj_projeler[]
+}
+
+model prj_projeler {
+  id               Int               @id @default(autoincrement())
+  baslik           String
+  ozet             String?
+  icerik           String?
+  kapak_resmi_url  String?
+  dosya_linkleri   String[]
+  ders_id          Int?
+  yazar_id         Int?
+  durum            String?           @default("onay_bekliyor")
+  olusturma_tarihi DateTime?         @default(now())
+  prj_dersler      prj_dersler?      @relation(fields: [ders_id], references: [id])
+  prj_kullanicilar prj_kullanicilar? @relation(fields: [yazar_id], references: [id], onDelete: Cascade)
+}
