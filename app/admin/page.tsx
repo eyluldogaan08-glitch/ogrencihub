@@ -8,6 +8,9 @@ interface ProjeVerisi {
   baslik: string | null;
   ozet: string | null;
   kapak_resmi_url: string | null;
+  detay_fotolari: string[];
+  dosya_linkleri: string[];
+  ad_soyad: string | null;
   durum: string | null;
   prj_dersler: { ders_adi: string | null } | null;
   prj_kullanicilar: { ad_soyad: string | null } | null;
@@ -15,15 +18,23 @@ interface ProjeVerisi {
 
 export default async function AdminPage() {
   const tumProjeler = await prisma.prj_projeler.findMany({
-    include: { prj_dersler: true, prj_kullanicilar: true },
-    orderBy: { olusturma_tarihi: "desc" },
+    include: {
+      prj_dersler: true,
+      prj_kullanicilar: true,
+    },
+    orderBy: {
+      olusturma_tarihi: "desc",
+    },
   });
 
   const dersler = await prisma.prj_dersler.findMany({
-    orderBy: { id: "asc" },
+    orderBy: {
+      id: "asc",
+    },
   });
 
   const bekleyenler = tumProjeler.filter((p) => p.durum === "onay_bekliyor");
+
   const onaylilar = tumProjeler.filter((p) => p.durum === "onaylandi");
 
   return (
@@ -35,6 +46,7 @@ export default async function AdminPage() {
           <h1 className="text-4xl font-serif font-bold text-gray-900 mb-2">
             Yönetim Paneli
           </h1>
+
           <p className="text-gray-400 font-medium tracking-tight">
             Sistemi buradan yönetiyoruz.
           </p>
@@ -57,8 +69,10 @@ export default async function AdminPage() {
                   <span className="font-semibold text-gray-700">
                     {ders.ders_adi}
                   </span>
+
                   <form action={dersSil}>
                     <input type="hidden" name="id" value={ders.id} />
+
                     <button
                       type="submit"
                       className="text-red-400 hover:text-red-600 text-sm font-bold transition"
@@ -70,7 +84,6 @@ export default async function AdminPage() {
               ))}
             </div>
 
-            {/* DERS EKLE FORMU */}
             <form action={dersEkle} className="flex gap-3">
               <input
                 name="ders_adi"
@@ -79,6 +92,7 @@ export default async function AdminPage() {
                 placeholder="Yeni ders adı..."
                 className="flex-1 px-4 py-3 bg-gray-50 rounded-2xl outline-none focus:ring-2 ring-blue-100 font-medium text-sm"
               />
+
               <button
                 type="submit"
                 className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-blue-700 transition"
@@ -95,6 +109,7 @@ export default async function AdminPage() {
             <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
             Onay Bekleyenler ({bekleyenler.length})
           </h2>
+
           <div className="grid gap-4">
             {bekleyenler.map((proje) => (
               <AdminProjeKarti
@@ -102,6 +117,7 @@ export default async function AdminPage() {
                 proje={proje as unknown as ProjeVerisi}
               />
             ))}
+
             {bekleyenler.length === 0 && (
               <p className="text-gray-400 italic text-sm">
                 Bekleyen işlem yok.
@@ -116,6 +132,7 @@ export default async function AdminPage() {
             <span className="w-2 h-2 bg-green-500 rounded-full" />
             Yayındaki Kayıtlar ({onaylilar.length})
           </h2>
+
           <div className="grid gap-4 opacity-75 hover:opacity-100 transition-opacity">
             {onaylilar.map((proje) => (
               <AdminProjeKarti

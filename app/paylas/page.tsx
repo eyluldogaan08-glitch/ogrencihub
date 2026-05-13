@@ -14,14 +14,17 @@ const lowlight = createLowlight(common);
 export default function PaylasPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [adSoyad, setAdSoyad] = useState("");
   const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [kapakOnizleme, setKapakOnizleme] = useState<string | null>(null);
   const [detayFotolar, setDetayFotolar] = useState<File[]>([]);
   const [detayOnizlemeler, setDetayOnizlemeler] = useState<string[]>([]);
+  const [dosyalar, setDosyalar] = useState<File[]>([]);
   const [lessons, setLessons] = useState<{ id: number; name: string }[]>([]);
   const kapakInputRef = useRef<HTMLInputElement>(null);
   const detayInputRef = useRef<HTMLInputElement>(null);
+  const dosyaInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("userToken");
@@ -47,7 +50,12 @@ export default function PaylasPage() {
   }, []);
 
   const editor = useEditor({
-    extensions: [StarterKit, CodeBlockLowlight.configure({ lowlight })],
+    extensions: [
+      StarterKit.configure({
+        codeBlock: false,
+      }),
+      CodeBlockLowlight.configure({ lowlight }),
+    ],
     content: "<p>Proje detaylarını anlatmaya başla...</p>",
     immediatelyRender: false,
     editorProps: {
@@ -62,9 +70,7 @@ export default function PaylasPage() {
 
   const handleKapakSec = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setKapakOnizleme(URL.createObjectURL(file));
-    }
+    if (file) setKapakOnizleme(URL.createObjectURL(file));
   };
 
   const handleDetayFotoSec = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,9 +85,22 @@ export default function PaylasPage() {
     setDetayOnizlemeler((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleDosyaSec = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setDosyalar((prev) => [...prev, ...files]);
+  };
+
+  const dosyaSil = (index: number) => {
+    setDosyalar((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleOnayaGonder = async () => {
     if (!title.trim() || !selectedLessonId) {
       alert("Lütfen başlık ve ders seç!");
+      return;
+    }
+    if (!adSoyad.trim()) {
+      alert("Lütfen adınızı ve soyadınızı girin!");
       return;
     }
     setIsSubmitting(true);
@@ -95,6 +114,7 @@ export default function PaylasPage() {
 
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       formData.append("kullanici_id", user.id?.toString() || "1");
+      formData.append("ad_soyad", adSoyad);
 
       if (kapakInputRef.current?.files?.[0]) {
         formData.append("kapak_resmi", kapakInputRef.current.files[0]);
@@ -102,6 +122,10 @@ export default function PaylasPage() {
 
       detayFotolar.forEach((foto) => {
         formData.append("detay_fotolar", foto);
+      });
+
+      dosyalar.forEach((dosya) => {
+        formData.append("dosyalar", dosya);
       });
 
       const sonuc = await projePaylas(formData);
@@ -139,6 +163,20 @@ export default function PaylasPage() {
 
       <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row gap-12 pb-32">
         <aside className="w-full md:w-64 flex-shrink-0 space-y-8">
+          {/* AD SOYAD */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
+              Ad Soyad
+            </label>
+            <input
+              type="text"
+              placeholder="Adınız Soyadınız"
+              value={adSoyad}
+              onChange={(e) => setAdSoyad(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-50 rounded-2xl outline-none text-sm font-medium focus:ring-2 ring-blue-100"
+            />
+          </div>
+
           {/* DERS KATEGORİSİ */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
@@ -242,6 +280,47 @@ export default function PaylasPage() {
                 <span className="text-xl">📷</span>
                 <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase">
                   Fotoğraf Ekle
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* DOSYA YÜKLEME */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
+              Dosya Ekle (PDF, ZIP vb.)
+            </label>
+            <input
+              type="file"
+              ref={dosyaInputRef}
+              className="hidden"
+              multiple
+              onChange={handleDosyaSec}
+            />
+            <div className="flex flex-col gap-2">
+              {dosyalar.map((dosya, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-xl"
+                >
+                  <span className="text-xs text-gray-600 truncate max-w-[140px]">
+                    📎 {dosya.name}
+                  </span>
+                  <button
+                    onClick={() => dosyaSil(i)}
+                    className="text-red-400 hover:text-red-600 text-xs font-bold ml-2"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <div
+                onClick={() => dosyaInputRef.current?.click()}
+                className="border-2 border-dashed border-gray-100 rounded-2xl p-4 text-center bg-gray-50/50 hover:border-blue-300 transition-colors cursor-pointer"
+              >
+                <span className="text-xl">📁</span>
+                <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase">
+                  Dosya Ekle
                 </p>
               </div>
             </div>

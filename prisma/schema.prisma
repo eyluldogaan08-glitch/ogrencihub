@@ -30,11 +30,14 @@ model prj_projeler {
   ozet             String?
   icerik           String?
   kapak_resmi_url  String?
+  detay_fotolari   String[]
   dosya_linkleri   String[]
   ders_id          Int?
   yazar_id         Int?
-  durum            String?           @default("onay_bekliyor")
-  olusturma_tarihi DateTime?         @default(now())
-  prj_dersler      prj_dersler?      @relation(fields: [ders_id], references: [id])
+  durum            String? @default("onay_bekliyor")
+  olusturma_tarihi DateTime? @default(now())
+  ad_soyad         String?
+
+  prj_dersler      prj_dersler? @relation(fields: [ders_id], references: [id])
   prj_kullanicilar prj_kullanicilar? @relation(fields: [yazar_id], references: [id], onDelete: Cascade)
 }

@@ -71,3 +71,15 @@ export async function dersSil(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/");
 }
+
+export async function kullaniciAdiniGuncelle(formData: FormData) {
+  const id = Number(formData.get("id"));
+  const yeni_ad = formData.get("yeni_ad") as string;
+
+  await prisma.prj_kullanicilar.update({
+    where: { id },
+    data: { ad_soyad: yeni_ad },
+  });
+  revalidatePath("/admin");
+  revalidatePath("/");
+}

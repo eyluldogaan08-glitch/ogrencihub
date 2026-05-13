@@ -2,10 +2,11 @@
 const nextConfig = {
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "100mb",
     },
   },
   images: {
+    qualities: [75, 100],
     remotePatterns: [
       {
         protocol: "https",
