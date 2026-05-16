@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../generated/prisma/client"
 }
 
 datasource db {
   provider = "postgresql"
 }
+
 model prj_dersler {
   id           Int            @id @default(autoincrement())
   ders_adi     String         @unique

@@ -32,7 +32,7 @@ export default function AnaSayfa() {
       try {
         const res = await fetch("/api/dersler");
         const data = await res.json();
-        setDersler(data);
+        setDersler(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Dersler yüklenirken hata:", error);
       }
@@ -47,8 +47,8 @@ export default function AnaSayfa() {
         const res = await fetch(
           `/api/projeler?arama=${aramaMetni}&ders_id=${seciliKategori}`,
         );
-        const data = await res.json();
-        setProjeler(data);
+      const data = await res.json();
+      setProjeler(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Projeler yüklenirken hata:", error);
       } finally {
